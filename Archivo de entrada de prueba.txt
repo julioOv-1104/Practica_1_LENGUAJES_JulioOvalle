@@ -1,0 +1,22 @@
+SI edad = 21
+
+// Este es un comentario de una sola linea
+
+{
+  // Ejemplo de comentarios dentro de una estructura
+  "ejemplo": "Puedes procesar esta linea?"
+}
+
+PARA i ENTONCES
+  x = 10 + 20
+  y = 30 * 5
+  SI (x > 1) {
+    z = y / 2;
+  }
+FIN
+
+/*
+  Este es un comentario de varias lineas
+  que incluye operadores:
+  + - * / %
+*/

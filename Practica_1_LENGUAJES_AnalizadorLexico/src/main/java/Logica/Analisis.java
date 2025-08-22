@@ -7,6 +7,9 @@ public class Analisis {
     private Configuracion config;
     private String comentarioLinea, comentarioBI, comentarioBF;//para saber como inician y terminan los comentarios 
 
+    private int fila = 1;
+    private int columna = 1;
+
     public Analisis(Configuracion config) {
         this.config = config;
         this.comentarioLinea = config.getComentarioLinea();// = "//"
@@ -26,10 +29,15 @@ public class Analisis {
             char c = texto.charAt(i);
             String simbolo = String.valueOf(c);
 
-            // letra - posible identificador o palabra reservada
-            if (Character.isLetter(c)) {
+            if (c == '\n') {
 
-                i = analizarLetras(lexema, columna, fila, i, texto, config);
+                fila++;
+                columna = 1;
+
+                // letra - posible identificador o palabra reservada
+            } else if (Character.isLetter(c)) {
+
+                i = analizarLetras(lexema, i, texto, config);
 
                 columna = i + salto;
             } //número - entero o decimal
@@ -51,7 +59,7 @@ public class Analisis {
                 columna = i + salto;
 
             } else if (texto.startsWith(comentarioBI, i)) {// si empieza con "/*"
-                
+
                 lexema.setLength(0);
                 boolean cerrado = false;
                 lexema.append(comentarioBI);
@@ -81,7 +89,7 @@ public class Analisis {
                     i++;
                 }
 
-                comentarioBloque(lexema, columna, fila, i, texto, cerrado);
+                comentarioBloque(lexema, columna, fila, i, cerrado);
 
                 //Si es un operador logico
             } else if (config.getOperadores().contains(simbolo)) {
@@ -101,11 +109,6 @@ public class Analisis {
             } else if (c == ' ') {
                 columna++;
 
-            } else if (c == '\n') {
-
-                fila++;
-                columna = 1;
-
                 //Posible caneda 
             } else if (c == '"') {
                 i = analizarCadena(lexema, columna, fila, i, texto);
@@ -120,7 +123,30 @@ public class Analisis {
         }
     }
 
-    public int analizarLetras(StringBuilder lexema, int columna, int fila, int i, String texto, Configuracion config) {
+    public void analizarTexto(String texto) {
+
+        StringBuilder lexema = new StringBuilder();//aqui se va a ir armando el texto que se está identificando
+        int indice = 0;
+
+        while (indice < texto.length()) {
+            char c = texto.charAt(indice);
+
+            if (c == '\n') {
+                fila++;
+                columna = 1;
+                // letra - posible identificador o palabra reservada
+            } else if (Character.isLetter(c)) {
+
+                indice = analizarLetras(lexema, indice, texto, config);
+
+            }
+
+            indice++;
+        }
+
+    }
+
+    public int analizarLetras(StringBuilder lexema, int i, String texto, Configuracion config) {
 
         lexema.setLength(0); // limpiar
         int iniciarColumna = columna;
@@ -129,6 +155,14 @@ public class Analisis {
         while (i < texto.length() && (Character.isLetterOrDigit(texto.charAt(i)))) {
             lexema.append(texto.charAt(i));
             i++;
+            columna++;
+            if (i < texto.length()) {
+                if (texto.charAt(i) == '\n') {
+                    fila++;
+                    columna = 1;
+                    return i;
+                }
+            }
 
         }
         String palabra = lexema.toString();
@@ -141,48 +175,18 @@ public class Analisis {
             System.out.println("TOKEN: IDENTIFICADOR, LEXEMA: " + lexema
                     + " (" + fila + "," + iniciarColumna + ")");
         }
-
-        return i--; // retroceder porque el for también hace i++ y asi sigue con el proceso en el for
-    }
-
-    private int analizarNumero(StringBuilder lexema, int columna, int fila, int i, String texto) {
-
-        lexema.setLength(0);
-        int startCol = columna;
-        boolean esDecimal = false;
-
-        while (i < texto.length() && (Character.isDigit(texto.charAt(i)) || texto.charAt(i) == '.')) {
-            if (texto.charAt(i) == '.') {
-                if (esDecimal) {
-                    break;//Da error porque significa que la cadena de numero tiene dos puntos y eso no existe                       
-                } else {
-                    esDecimal = true;//ahora es un decimal
-                }
-
-            }
-            lexema.append(texto.charAt(i));
-            i++;
-
-        }
-
-        if (esDecimal) {
-            System.out.println("TOKEN: DECIMAL, LEXEMA: " + lexema
-                    + " (" + fila + "," + startCol + ")");
-        } else {
-            System.out.println("TOKEN: NUMERO, LEXEMA: " + lexema
-                    + " (" + fila + "," + startCol + ")");
-        }
-        return i--;
+        columna++;
+        return i; // retroceder porque el for también hace i++ y asi sigue con el proceso en el for
     }
 
     private int analizarNumeros(StringBuilder lexema, int columna, int fila, int i, String texto) {
 
         lexema.setLength(0);
-        int startCol = columna;
+
         boolean esDecimal = false;
         boolean cadenaInvalida = false;
 
-        while (i < texto.length() && (texto.charAt(i) != ' ')) {
+        while (i < texto.length() && texto.charAt(i) != '\n') {
 
             if (texto.charAt(i) == '.' || (Character.isDigit(texto.charAt(i)))) {//es un punto o un numero?
 
@@ -195,8 +199,11 @@ public class Analisis {
                     }
 
                 }
+
                 lexema.append(texto.charAt(i));
                 i++;
+
+            } else if (texto.charAt(i) == ' ' || texto.charAt(i) == '\n') {
 
             } else {//No es punto ni numero
                 cadenaInvalida = true;
@@ -205,72 +212,19 @@ public class Analisis {
             }
 
         }
+
         if (cadenaInvalida) {
             //indica que la cadena no es valida
             String lexemaInvalido = lexema.toString();
-            errorEncontrado(fila, startCol, lexemaInvalido + "");
+            errorEncontrado(fila, columna, lexemaInvalido + "");
 
         } else if (esDecimal) {
             System.out.println("TOKEN: DECIMAL, LEXEMA: " + lexema
-                    + " (" + fila + "," + startCol + ")");
+                    + " (" + fila + "," + columna + ")");
         } else {
             System.out.println("TOKEN: NUMERO, LEXEMA: " + lexema
-                    + " (" + fila + "," + startCol + ")");
-        }
-        return i--;
-    }
-
-    private int analizadorComentarios(StringBuilder lexema, int columna, int fila, int i, String texto) {
-
-        lexema.setLength(0);///limpiar
-        String simbolo = String.valueOf(texto.charAt(i));
-        boolean bloqueCerrado = false;
-
-        if (i + 1 < texto.length() || (texto.charAt(i + 1)) == ' ') {//Si al final ya no hay nada o está vacio solo es un operador
-
-            if ((texto.charAt(i + 1)) != ' ' || ((texto.charAt(i + 1) != '/') || (texto.charAt(i + 1) != '*'))) {//es un error
-
-                String cadena = lexema.toString();
-                System.out.println("ERRO: conjunto no valido: " + cadena + " en"
-                        + " (" + fila + "," + columna + ")");
-
-            } else if (i < texto.length() && (texto.charAt(i + 1) == '/')) {//es un comentario de una linea
-
-                while (i < texto.length()) {
-                    lexema.append(texto.charAt(i));
-                    i++;
-                }
-
-                String comentario = lexema.toString();
-                System.out.println("TOKEN: COMENTARIO_LINEA, LEXEMA: " + comentario
-                        + " (" + fila + "," + columna + ")");
-
-            } else if (i < texto.length() && (texto.charAt(i + 1) == '*')) {//Es un bloque inicio
-
-                while (i < texto.length() || bloqueCerrado == true) {
-                    lexema.append(texto.charAt(i));
-                    i++;
-
-                    if (texto.charAt(i) == '*' && texto.charAt(i + 1) == '/') {//encuentra el bloque fin
-                        bloqueCerrado = true;
-                    }
-                }
-
-            }
-
-        }
-
-        if (bloqueCerrado) {
-
-            String comentario = lexema.toString();
-            System.out.println("TOKEN: COMENTARIO_BLOQUE, LEXEMA: " + comentario
-                    + " (" + fila + "," + columna + ")");
-        } else {
-
-            System.out.println("TOKEN: OPERADOR, LEXEMA: " + "'" + simbolo + "'"
                     + " (" + fila + "," + columna + ")");
         }
-
         return i--;
     }
 
@@ -287,13 +241,13 @@ public class Analisis {
         return i++;
     }
 
-    private void comentarioBloque(StringBuilder lexema, int columna, int fila, int i, String texto, boolean cerrado) {
+    private void comentarioBloque(StringBuilder lexema, int columna, int fila, int i, boolean cerrado) {
 
         if (cerrado) {
             System.out.println("TOKEN: COMENTARIO_BLOQUE, LEXEMA: " + "'" + lexema + "'"//Si está cerrado
                     + " (" + fila + "," + columna + ")");
         } else {
-            errorEncontrado(fila, columna, lexema+"");//Si no está cerrado
+            errorEncontrado(fila, columna, lexema + "");//Si no está cerrado
         }
 
     }

@@ -1,6 +1,6 @@
 {
 	"palabrasReservadas": ["SI", "si", "ENTONCES", "entonces", "PARA", "para"],
-	"operadoresLogicos": ["+", "-", "*", "/", "%", "="],
+	"operadoresLogicos": ["+", "-", "*", "/", "%", "=", ">"],
 	"signosAgrupacion": ["(", ")", "[", "]", "{", "}"],
 	"signosPuntuacion": [".", ",", ":" , ";"],
 	"comentarios": {
