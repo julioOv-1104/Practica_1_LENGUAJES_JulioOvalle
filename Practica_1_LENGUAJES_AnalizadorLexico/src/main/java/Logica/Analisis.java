@@ -4,10 +4,21 @@ import GestionArchivos.Configuracion;
 
 public class Analisis {
 
-    public void analizar(String texto, Configuracion config) {
+    private Configuracion config;
+    private String comentarioLinea, comentarioBI, comentarioBF;//para saber como inician y terminan los comentarios 
 
-        int fila = 1;   // para el ejemplo mantenemos 1, pero puedes aumentar con '\n'
-        int columna = 1;
+    public Analisis(Configuracion config) {
+        this.config = config;
+        this.comentarioLinea = config.getComentarioLinea();// = "//"
+        this.comentarioBI = config.getComentarioBloqueInicio();// = "/*"
+        this.comentarioBF = config.getComentarioBloqueFin(); // = "*/"
+    }
+
+    public void analizar(String texto) {
+
+        int fila = 1;   // empieza con 1 per puede aumentar con '\n'
+        int columna = 1;// inicia con 1
+        int salto = 2;
 
         StringBuilder lexema = new StringBuilder();//aqui se va a ir armando el texto que se está identificando
 
@@ -20,12 +31,12 @@ public class Analisis {
 
                 i = analizarLetras(lexema, columna, fila, i, texto, config);
 
-                columna = i + 2;
+                columna = i + salto;
             } //número - entero o decimal
             else if (Character.isDigit(c)) {
 
                 i = analizarNumeros(lexema, columna, fila, i, texto);
-                columna = +i + 2;
+                columna = i + salto;
 
                 //Si es un signo de puntuacion
             } else if (config.getPuntuacion().contains(simbolo)) {
@@ -33,12 +44,51 @@ public class Analisis {
                 System.out.println("TOKEN: PUNTUACION, LEXEMA: " + "'" + simbolo + "'"
                         + " (" + fila + "," + columna + ")");
                 columna++;
+                //posible comentario
+            } else if (texto.startsWith(comentarioLinea, i)) {// si empieza con "//"
+
+                i = comentarioLinea(lexema, columna, fila, i, texto);
+                columna = i + salto;
+
+            } else if (texto.startsWith(comentarioBI, i)) {// si empieza con "/*"
+                
+                lexema.setLength(0);
+                boolean cerrado = false;
+                lexema.append(comentarioBI);
+
+                i += comentarioBI.length();
+                columna += comentarioBI.length();//para que sepa donde seguir contando
+
+                while (i < texto.length()) {
+
+                    if (texto.startsWith(comentarioBF, i)) {//encontró el final del comentario
+
+                        lexema.append(comentarioBF);
+                        i += comentarioBF.length();
+                        columna += comentarioBF.length();
+                        cerrado = true;
+                        break;
+                    }
+
+                    lexema.append(texto.charAt(i));
+
+                    if (texto.charAt(i) == '\n') {
+                        fila++;
+                        columna = 1;
+                    } else {
+                        columna++;
+                    }
+                    i++;
+                }
+
+                comentarioBloque(lexema, columna, fila, i, texto, cerrado);
 
                 //Si es un operador logico
             } else if (config.getOperadores().contains(simbolo)) {
 
-                i = analizadorComentarios(lexema, columna, fila, i, texto);
-                columna = i + 2;
+                System.out.println("TOKEN: OPERADOR, LEXEMA: " + "'" + simbolo + "'"
+                        + " (" + fila + "," + columna + ")");
+                columna++;
 
                 //Si es un signo de agrupacion
             } else if (config.getAgrupacion().contains(simbolo)) {
@@ -50,13 +100,21 @@ public class Analisis {
                 //espacios o saltos de línea
             } else if (c == ' ') {
                 columna++;
+
             } else if (c == '\n') {
+
                 fila++;
                 columna = 1;
+
+                //Posible caneda 
+            } else if (c == '"') {
+                i = analizarCadena(lexema, columna, fila, i, texto);
+                columna = i + salto;
+
             } //cualquier otro símbolo (error)
             else {
-                System.out.println("ERROR: simbolo '" + c + "' no reconocido en ("
-                        + fila + "," + columna + ")");
+                String error = Character.toString(c);
+                errorEncontrado(fila, columna, error);
                 columna++;
             }
         }
@@ -150,8 +208,7 @@ public class Analisis {
         if (cadenaInvalida) {
             //indica que la cadena no es valida
             String lexemaInvalido = lexema.toString();
-            System.out.println("ERROR: cadena " + lexemaInvalido + " invalida en"
-                    + " (" + fila + "," + startCol + ")");
+            errorEncontrado(fila, startCol, lexemaInvalido + "");
 
         } else if (esDecimal) {
             System.out.println("TOKEN: DECIMAL, LEXEMA: " + lexema
@@ -167,15 +224,17 @@ public class Analisis {
 
         lexema.setLength(0);///limpiar
         String simbolo = String.valueOf(texto.charAt(i));
+        boolean bloqueCerrado = false;
 
-        if (i + 1 < texto.length()) {//Si al final ya no hay nada solo es un operador
+        if (i + 1 < texto.length() || (texto.charAt(i + 1)) == ' ') {//Si al final ya no hay nada o está vacio solo es un operador
 
-            if ((texto.charAt(i + 1) == ' ')) {//es un operador nada mas
+            if ((texto.charAt(i + 1)) != ' ' || ((texto.charAt(i + 1) != '/') || (texto.charAt(i + 1) != '*'))) {//es un error
 
-                System.out.println("TOKEN: OPERADOR, LEXEMA: " + "'" + simbolo + "'"
+                String cadena = lexema.toString();
+                System.out.println("ERRO: conjunto no valido: " + cadena + " en"
                         + " (" + fila + "," + columna + ")");
 
-            } else if (i < texto.length() && (texto.charAt(i) == '/')) {//es un comentario de una linea
+            } else if (i < texto.length() && (texto.charAt(i + 1) == '/')) {//es un comentario de una linea
 
                 while (i < texto.length()) {
                     lexema.append(texto.charAt(i));
@@ -185,12 +244,100 @@ public class Analisis {
                 String comentario = lexema.toString();
                 System.out.println("TOKEN: COMENTARIO_LINEA, LEXEMA: " + comentario
                         + " (" + fila + "," + columna + ")");
+
+            } else if (i < texto.length() && (texto.charAt(i + 1) == '*')) {//Es un bloque inicio
+
+                while (i < texto.length() || bloqueCerrado == true) {
+                    lexema.append(texto.charAt(i));
+                    i++;
+
+                    if (texto.charAt(i) == '*' && texto.charAt(i + 1) == '/') {//encuentra el bloque fin
+                        bloqueCerrado = true;
+                    }
+                }
+
             }
 
         }
-        System.out.println("TOKEN: OPERADOR, LEXEMA: " + "'" + simbolo + "'"
-                + " (" + fila + "," + columna + ")");
+
+        if (bloqueCerrado) {
+
+            String comentario = lexema.toString();
+            System.out.println("TOKEN: COMENTARIO_BLOQUE, LEXEMA: " + comentario
+                    + " (" + fila + "," + columna + ")");
+        } else {
+
+            System.out.println("TOKEN: OPERADOR, LEXEMA: " + "'" + simbolo + "'"
+                    + " (" + fila + "," + columna + ")");
+        }
+
         return i--;
+    }
+
+    private int comentarioLinea(StringBuilder lexema, int columna, int fila, int i, String texto) {
+
+        lexema.setLength(0);
+        while (i < texto.length() && texto.charAt(i) != '\n') {
+            lexema.append(texto.charAt(i));
+            i++;
+        }
+
+        System.out.println("TOKEN: COMENTARIO_LINEA, LEXEMA: " + "'" + lexema + "'"
+                + " (" + fila + "," + columna + ")");
+        return i++;
+    }
+
+    private void comentarioBloque(StringBuilder lexema, int columna, int fila, int i, String texto, boolean cerrado) {
+
+        if (cerrado) {
+            System.out.println("TOKEN: COMENTARIO_BLOQUE, LEXEMA: " + "'" + lexema + "'"//Si está cerrado
+                    + " (" + fila + "," + columna + ")");
+        } else {
+            errorEncontrado(fila, columna, lexema+"");//Si no está cerrado
+        }
+
+    }
+
+    private int analizarCadena(StringBuilder lexema, int columna, int fila, int i, String texto) {
+
+        lexema.setLength(0);
+        boolean cadenaCerrada = false;
+        int columnaInicial = columna;
+        int filaini = fila;
+
+        lexema.append(texto.charAt(i));
+        i++;//Pasa a el siguiente caracter
+
+        while (i < texto.length() || cadenaCerrada == true) {
+            lexema.append(texto.charAt(i));
+
+            if (texto.charAt(i) == '"') {
+                cadenaCerrada = true;
+                break;
+            }
+            if (texto.charAt(i) == '\n') {
+                //salto de linea
+                fila++;
+                columna = 1;
+            }
+            i++;
+        }
+
+        if (cadenaCerrada) {
+            System.out.println("TOKEN: CADENA, LEXEMA: " + lexema + " en"
+                    + " (" + filaini + "," + columnaInicial + ")");
+
+        } else {
+            errorEncontrado(fila, columna, lexema + "");
+
+        }
+        return i--;
+    }
+
+    private void errorEncontrado(int fila, int columna, String error) {
+
+        System.out.println("ERROR: '" + error + "' no reconocido en ("
+                + fila + "," + columna + ")");
     }
 
 }

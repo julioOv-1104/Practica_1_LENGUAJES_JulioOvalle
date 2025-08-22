@@ -8,15 +8,15 @@ public class ClaseMain {
     public static void main(String[] args) {
 
         // Texto de ejemplo
-        String entrada = "8.8 int ; = ( 25 prueba123 // SI  -";
-
-        Analisis analizador = new Analisis();
-
-        System.out.println(entrada + "\n");
+        String entrada = "8.8.0 int ; = \"HOLA MUNDO\"  /*COMENTARIO DE BLOQUE* ( 25 prueba123 SI - //COMENTARIO DE LINEA";
         Configuracion cargar = new Configuracion();
         cargar.cargarJSON();
+        
+        Analisis analizador = new Analisis(cargar);
 
-        analizador.analizar(entrada, cargar);
+        System.out.println(entrada + "\n");
+
+        analizador.analizar(entrada);
 
         /*System.out.println("Palabras reservadas: " + cargar.getPalabrasReservadas());
         System.out.println("Operadores: " + cargar.getOperadores());
