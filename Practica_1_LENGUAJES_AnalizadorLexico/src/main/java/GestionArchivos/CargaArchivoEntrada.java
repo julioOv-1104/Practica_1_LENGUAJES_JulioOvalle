@@ -61,11 +61,12 @@ public class CargaArchivoEntrada implements Runnable {
 
             System.out.println(archivoTexto);
             System.out.println("\n");
-            System.out.println("EL LARGO DEL ARCHIVO "+archivoTexto.length());
+            System.out.println("EL LARGO DEL ARCHIVO " + archivoTexto.length());
             System.out.println("---------------------------------LECTURA-------------------------------------");
             System.out.println("\n");
-            analizador.analizarTexto(archivoTexto);
-            
+            StringBuilder lexema = new StringBuilder();
+            lexema.setLength(0);
+            analizador.analizarTexto(lexema, archivoTexto);
 
         } catch (IOException e) {
             System.out.println("ERROR AL LEER ARCHIVO DE ENTRADA: " + e.getMessage());

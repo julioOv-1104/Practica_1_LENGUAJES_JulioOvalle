@@ -1,4 +1,6 @@
-SI edad = 21
+SI edad = 21.5
+
+"123456789" 
 
 // Este es un comentario de una sola linea
 
