@@ -1,5 +1,5 @@
 SI edad = 21.5
-
+585f3.40
 "123456789" 
 
 // Este es un comentario de una sola linea
@@ -15,7 +15,6 @@ PARA i ENTONCES
   SI (x > 1) {
     z = y / 2;
   }
-FIN
 
 /*
   Este es un comentario de varias lineas

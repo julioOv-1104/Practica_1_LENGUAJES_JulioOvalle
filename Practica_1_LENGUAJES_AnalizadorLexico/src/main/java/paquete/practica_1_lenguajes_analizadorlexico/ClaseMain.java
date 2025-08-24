@@ -2,15 +2,12 @@ package paquete.practica_1_lenguajes_analizadorlexico;
 
 import GestionArchivos.CargaArchivoEntrada;
 import GestionArchivos.Configuracion;
+import InterfazGrafica.AnalizadorLexicoIG;
 import Logica.Analisis;
 
 public class ClaseMain {
 
     public static void main(String[] args) {
-
-        // Texto de ejemplo
-        //String entrada = "8.8.0 int ; = \"HOLA MUNDO\"  /*COMENTARIO DE BLOQUE* ( 25 prueba123 SI - //COMENTARIO DE LINEA";
-        //String txt = "palapala ad ENTONCES /*abc123 ojo 1104 2.0)*/ \njulio si  12;  \n\"allan ovalle\"\n ; { + // comentario si  ";
 
         Configuracion cargar = new Configuracion();
         cargar.cargarJSON();
@@ -18,10 +15,12 @@ public class ClaseMain {
 
         Analisis analizador = new Analisis(cargar);
 
-        CargaArchivoEntrada iniciarArchivo = new CargaArchivoEntrada(ruta, cargar,analizador);
+        /*CargaArchivoEntrada iniciarArchivo = new CargaArchivoEntrada(ruta, cargar,analizador);
         Thread hilo = new Thread(iniciarArchivo);
-        hilo.start();
+        hilo.start();*/
         
+        AnalizadorLexicoIG ig = new AnalizadorLexicoIG(analizador);
+        ig.setVisible(true);
         
         
         

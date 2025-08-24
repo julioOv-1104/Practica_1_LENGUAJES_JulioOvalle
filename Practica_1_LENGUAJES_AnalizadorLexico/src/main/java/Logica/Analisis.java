@@ -1,8 +1,11 @@
 package Logica;
 
 import GestionArchivos.Configuracion;
+import java.util.*;
 
 public class Analisis {
+
+    List<Token> tokensEncontrados = new ArrayList<>();
 
     private Configuracion config;
     private String comentarioLinea, comentarioBI, comentarioBF;//para saber como inician y terminan los comentarios 
@@ -123,9 +126,9 @@ public class Analisis {
         }
     }
 
-    public void analizarTexto(StringBuilder lexema, String texto) {
+    public List<Token> analizarTexto( String texto) {
 
-        //StringBuilder lexema = new StringBuilder();//aqui se va a ir armando el texto que se está identificando
+        StringBuilder lexema = new StringBuilder();//aqui se va a ir armando el texto que se está identificando
         int indice = 0;
 
         while (indice < texto.length()) {
@@ -178,7 +181,7 @@ public class Analisis {
 
             indice++;
         }
-
+        return tokensEncontrados;
     }
 
     public int analizarLetras(StringBuilder lexema, int i, String texto, Configuracion config) {
@@ -206,9 +209,12 @@ public class Analisis {
         if (config.getPalabrasReservadas().contains(palabra)) {
             System.out.println("TOKEN: PALABRA_RESERVADA, LEXEMA: " + lexema
                     + " (" + filaini + "," + columnaInicial + ")");
+            agregarToken("PALABRA_RESERVADA", lexema + "");
+
         } else {
             System.out.println("TOKEN: IDENTIFICADOR, LEXEMA: " + lexema
                     + " (" + filaini + "," + columnaInicial + ")");
+            agregarToken("IDENTIFICADOR", lexema + "");
         }
         columna++;
         return i; //se retorna "i" para llevar el conteo de caracteres leidos
@@ -218,6 +224,7 @@ public class Analisis {
         int columnaInicial = columna;//Se guardan para ser mostradas
         int filaini = fila;
         lexema.setLength(0);
+        String simbolo = String.valueOf(texto.charAt(i));
 
         boolean esDecimal = false;
         boolean cadenaInvalida = false;
@@ -247,14 +254,22 @@ public class Analisis {
                 fila++;
                 break;
 
+            } else if (config.getOperadores().contains(simbolo) || config.getAgrupacion().contains(simbolo)
+                    || config.getPuntuacion().contains(simbolo)) {
+                i--;
+                break;
+
             } else {//No es punto ni numero
-                /*cadenaInvalida = true;
-                lexema.append(texto.charAt(i));*/
-                i--;//Para que regrese
+                cadenaInvalida = true;
+                lexema.append(texto.charAt(i));
                 break;
 
             }
 
+        }
+
+        if (texto.charAt(i) == ' ') {// si es un espacio en blanco
+            columna++;
         }
 
         if (cadenaInvalida) {
@@ -265,9 +280,11 @@ public class Analisis {
         } else if (esDecimal) {
             System.out.println("TOKEN: DECIMAL, LEXEMA: " + lexema
                     + " (" + filaini + "," + columnaInicial + ")");
+            agregarToken("DECIMAL", lexema + "");
         } else {
             System.out.println("TOKEN: NUMERO, LEXEMA: " + lexema
                     + " (" + filaini + "," + columnaInicial + ")");
+            agregarToken("NUMERO", lexema + "");
         }
 
         return i;
@@ -291,6 +308,7 @@ public class Analisis {
 
         System.out.println("TOKEN: COMENTARIO_LINEA, LEXEMA: " + "'" + lexema + "'"
                 + " (" + filaini + "," + columnaInicial + ")");
+        agregarToken("COMENTARIO_LINEA", lexema + "");
         return i;
     }
 
@@ -303,7 +321,6 @@ public class Analisis {
 
         int columnaInicial = columna;//Se guardan para ser mostradas
         int filaini = fila;
-
         i += comentarioBI.length();
         columna += comentarioBI.length();//para que sepa donde seguir contando
 
@@ -333,6 +350,7 @@ public class Analisis {
         if (cerrado) {
             System.out.println("TOKEN: COMENTARIO_BLOQUE, LEXEMA: " + "'" + lexema + "'"//Si está cerrado
                     + " (" + filaini + "," + columnaInicial + ")");
+            agregarToken("COMENTARIO_BLOQUE", lexema + "");
         } else {
             errorEncontrado(filaini, columnaInicial, lexema + "");//Si no está cerrado
         }
@@ -375,6 +393,7 @@ public class Analisis {
         if (cadenaCerrada) {
             System.out.println("TOKEN: CADENA, LEXEMA: " + lexema + " en"
                     + " (" + filaini + "," + columnaInicial + ")");
+            agregarToken("CADENA", lexema + "");
 
         } else {
             errorEncontrado(fila, columnaInicial, lexema + "");
@@ -387,24 +406,33 @@ public class Analisis {
         lexema.setLength(0);
         System.out.println("TOKEN: PUNTUACION, LEXEMA: " + "'" + simbolo + "'"
                 + " (" + fila + "," + columna + ")");
+        agregarToken("PUNTUACION", simbolo + "");
     }
 
     private void analizarOperador(StringBuilder lexema, String simbolo) {
         lexema.setLength(0);
         System.out.println("TOKEN: OPERADOR, LEXEMA: " + "'" + simbolo + "'"
                 + " (" + fila + "," + columna + ")");
+        agregarToken("OPERADOR", simbolo + "");
     }
 
     private void analizarAgrupacion(StringBuilder lexema, String simbolo) {
         lexema.setLength(0);
         System.out.println("TOKEN: AGRUPACION, LEXEMA: " + "'" + simbolo + "'"
                 + " (" + fila + "," + columna + ")");
+        agregarToken("AGRUPACION", simbolo + "");
     }
 
     private void errorEncontrado(int fila, int columna, String error) {
 
         System.out.println("ERROR: '" + error + "' no reconocido en ("
                 + fila + "," + columna + ")");
+        agregarToken("ERROR", error + "");
+    }
+
+    private void agregarToken(String tipo, String lexema) {
+
+        tokensEncontrados.add(new Token(tipo, lexema));//Agrega el token econtrado a la lista
     }
 
 }

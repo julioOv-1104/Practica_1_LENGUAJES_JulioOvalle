@@ -1,9 +1,11 @@
 package GestionArchivos;
 
 import Logica.Analisis;
+import Logica.Token;
 import java.io.*;
 
 import java.nio.file.*;
+import java.util.List;
 
 public class CargaArchivoEntrada implements Runnable {
 
@@ -47,6 +49,7 @@ public class CargaArchivoEntrada implements Runnable {
         }
 
     }*/
+    
     @Override
     public void run() {
 
@@ -64,9 +67,9 @@ public class CargaArchivoEntrada implements Runnable {
             System.out.println("EL LARGO DEL ARCHIVO " + archivoTexto.length());
             System.out.println("---------------------------------LECTURA-------------------------------------");
             System.out.println("\n");
-            StringBuilder lexema = new StringBuilder();
-            lexema.setLength(0);
-            analizador.analizarTexto(lexema, archivoTexto);
+            //List<Token> tokens  = analizador.analizarTexto( archivoTexto);
+            
+            
 
         } catch (IOException e) {
             System.out.println("ERROR AL LEER ARCHIVO DE ENTRADA: " + e.getMessage());
