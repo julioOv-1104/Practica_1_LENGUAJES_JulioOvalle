@@ -62,7 +62,7 @@ public class CargaArchivoEntrada implements Runnable {
             archivoTexto = archivoTexto.replace("\r\n", "\n");
             archivoTexto = archivoTexto.replace("\r", "\n");
 
-            System.out.println(archivoTexto);
+            //System.out.println(archivoTexto);
 
             try {
                 espacio.getEstiloDocumento().insertString(espacio.getEstiloDocumento().getLength(), archivoTexto, null);

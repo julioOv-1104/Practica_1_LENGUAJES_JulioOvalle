@@ -14,6 +14,7 @@ public class IFCargarArchivo extends javax.swing.JInternalFrame {
     public IFCargarArchivo(AnalizadorLexicoIG espacio) {
         initComponents();
         this.espacio = espacio;
+        this.closable = true;
     }
 
     @SuppressWarnings("unchecked")

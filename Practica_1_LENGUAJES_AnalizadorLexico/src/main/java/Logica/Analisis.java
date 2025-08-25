@@ -126,8 +126,7 @@ public class Analisis {
         }
     }
 
-    public List<Token> analizarTexto( String texto) {
-
+    public List<Token> analizarTexto(String texto) {
         StringBuilder lexema = new StringBuilder();//aqui se va a ir armando el texto que se está identificando
         int indice = 0;
 
@@ -135,12 +134,18 @@ public class Analisis {
             char c = texto.charAt(indice);
             String simbolo = String.valueOf(c);
 
-            if (c == '\n') {
+            if (c == '\n' || c == '\r') {
+                lexema.setLength(0);
+                lexema.append('\n');
+                agregarToken("SLATO", lexema + "");
                 fila++;
                 columna = 1;
 
                 // letra - posible identificador o palabra reservada
             } else if (c == ' ') {
+                lexema.setLength(0);
+                lexema.append(' ');
+                agregarToken("ESPACIO", lexema + "");
                 columna++;
 
                 //Detecta identificadores o palabras reservadas
@@ -224,14 +229,14 @@ public class Analisis {
         int columnaInicial = columna;//Se guardan para ser mostradas
         int filaini = fila;
         lexema.setLength(0);
-        String simbolo = String.valueOf(texto.charAt(i));
 
         boolean esDecimal = false;
         boolean cadenaInvalida = false;
 
-        while (i < texto.length() && texto.charAt(i) != ' ') {
+        while (i < texto.length()) {
+            String simbolo = String.valueOf(texto.charAt(i));
 
-            if (texto.charAt(i) == '.' || (Character.isDigit(texto.charAt(i)))) {//es un punto o un numero?
+            if (texto.charAt(i) == '.' || Character.isDigit(texto.charAt(i))) {//es un punto o un numero?
 
                 if (texto.charAt(i) == '.') {
 
@@ -249,14 +254,20 @@ public class Analisis {
                 i++;
                 columna++;
 
-            } else if (texto.charAt(i) == '\n') {
+            } else if (texto.charAt(i) == ' ') {
+                i--;
+                break;
+
+            } else if (texto.charAt(i) == '\n' || texto.charAt(i) == '\r') {
+                System.out.println("ES UN SALTO DE LINEA");
+                i--;
                 columna = 1;
                 fila++;
                 break;
 
             } else if (config.getOperadores().contains(simbolo) || config.getAgrupacion().contains(simbolo)
                     || config.getPuntuacion().contains(simbolo)) {
-                i--;
+                i--;//retrocede para que en la siguiente iteracion pueda evaluar el simbolo
                 break;
 
             } else {//No es punto ni numero
@@ -266,10 +277,6 @@ public class Analisis {
 
             }
 
-        }
-
-        if (texto.charAt(i) == ' ') {// si es un espacio en blanco
-            columna++;
         }
 
         if (cadenaInvalida) {

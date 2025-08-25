@@ -12,112 +12,115 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 
 public class AnalizadorLexicoIG extends javax.swing.JFrame {
-
+    
     private StyledDocument estiloDocumento;
     private Analisis analizador;
     private boolean repintando = false;
-
+    
     public AnalizadorLexicoIG(Analisis analizador) {
         initComponents();
         this.estiloDocumento = Editor1.getStyledDocument();
         this.analizador = analizador;
         definirEstilos(Editor1);
-
+        
     }
-
+    
     public void definirEstilos(JTextPane editor) {//define cuales son los colores para cada token
         Color cafe = new Color(111, 78, 55);
         Color verdeOscuro = new Color(28, 86, 49);
         Color morado = new Color(160, 32, 240);
-
+        
         StyledDocument estiloDocumento = editor.getStyledDocument();
-
+        
         Style colorReservadas = editor.addStyle("reservadas", null);
         StyleConstants.setForeground(colorReservadas, Color.BLUE);
-
+        
         Style colorIdentificadores = editor.addStyle("identificadores", null);
         StyleConstants.setForeground(colorIdentificadores, cafe);
-
+        
         Style colorNumeros = editor.addStyle("numeros", null);
         StyleConstants.setForeground(colorNumeros, Color.GREEN);
-
+        
         Style colorCadenas = editor.addStyle("cadenas", null);
         StyleConstants.setForeground(colorCadenas, Color.orange);
-
+        
         Style colorDecimales = editor.addStyle("decimales", null);
         StyleConstants.setForeground(colorDecimales, Color.BLACK);
-
+        
         Style colorComentarios = editor.addStyle("comentarios", null);
         StyleConstants.setForeground(colorComentarios, verdeOscuro);
-
+        
         Style colorOperadores = editor.addStyle("operadores", null);
         StyleConstants.setForeground(colorOperadores, Color.YELLOW);
-
+        
         Style colorAgrupadores = editor.addStyle("agrupadores", null);
         StyleConstants.setForeground(colorAgrupadores, morado);
-
+        
         Style colorErrores = editor.addStyle("errores", null);
         StyleConstants.setForeground(colorErrores, Color.RED);
-
+        
     }
-
+    
     private void limpiarPantalla() {
-
+        
         for (JInternalFrame frame : vistaEscritorio.getAllFrames()) {
             frame.setVisible(false);//Cierra todas las ventanas que estubieran abiertas
         }
-
+        
     }
-
+    
     public void colorearTokens() {
-
+        
         String textoIngresado = Editor1.getText();
-        List<Token> tokens = analizador.analizarTexto(textoIngresado + " ");
+        textoIngresado = textoIngresado;
+        List<Token> tokens = analizador.analizarTexto(textoIngresado);
 
         try {
+            
             estiloDocumento.remove(0, estiloDocumento.getLength());//limpia el txtPane
 
             for (Token t : tokens) {
                 System.out.println("TIPO TOKEN " + t.getTipo());
                 Style estilo = estiloDocumento.getStyle("default");
-
+                
                 if ("PALABRA_RESERVADA".equals(t.getTipo())) {
                     estilo = estiloDocumento.getStyle("reservadas");
-
+                    
                 } else if ("IDENTIFICADOR".equals(t.getTipo())) {
                     estilo = estiloDocumento.getStyle("identificadores");
-
+                    
                 } else if ("NUMERO".equals(t.getTipo())) {
                     estilo = estiloDocumento.getStyle("numeros");
-
+                    
                 } else if ("CADENA".equals(t.getTipo())) {
                     estilo = estiloDocumento.getStyle("cadenas");
-
+                    
                 } else if ("DECIMAL".equals(t.getTipo())) {
                     estilo = estiloDocumento.getStyle("decimales");
-
+                    
                 } else if ("COMENTARIO_LINEA".equals(t.getTipo()) || "COMENTARIO_BLOQUE".equals(t.getTipo())) {
                     estilo = estiloDocumento.getStyle("comentarios");
-
+                    
                 } else if ("OPERADOR".equals(t.getTipo())) {
                     estilo = estiloDocumento.getStyle("operadores");
-
+                    
                 } else if ("AGRUPACION".equals(t.getTipo())) {
                     estilo = estiloDocumento.getStyle("agrupadores");
-
+                    
                 } else if ("ERROR".equals(t.getTipo())) {
                     estilo = estiloDocumento.getStyle("errores");
-
+                    
                 }
-
+                
                 estiloDocumento.insertString(estiloDocumento.getLength(), t.getLexema() + " ", estilo);
+               
             }
-
+            
         } catch (Exception e) {
         }
-
+        
     }
-
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -257,39 +260,38 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
         IFCargarArchivo cargar = new IFCargarArchivo(this);
         vistaEscritorio.add(cargar);
         cargar.show();
-
+        
 
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void btnAnalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarActionPerformed
-       colorearTokens();
+        colorearTokens();
     }//GEN-LAST:event_btnAnalizarActionPerformed
-
+    
     public JTextPane getEditor1() {
         return Editor1;
     }
-
+    
     public void setEditor1(JTextPane Editor1) {
         this.Editor1 = Editor1;
     }
-
+    
     public JTextPane getEditor2() {
         return Editor2;
     }
-
+    
     public void setEditor2(JTextPane Editor2) {
         this.Editor2 = Editor2;
     }
-
+    
     public StyledDocument getEstiloDocumento() {
         return estiloDocumento;
     }
-
+    
     public void setEstiloDocumento(StyledDocument estiloDocumento) {
         this.estiloDocumento = estiloDocumento;
     }
 
-    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextPane Editor1;
