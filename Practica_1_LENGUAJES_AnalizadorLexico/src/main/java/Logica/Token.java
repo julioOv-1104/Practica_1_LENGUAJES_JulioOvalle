@@ -4,10 +4,13 @@ package Logica;
 public class Token {
     private String tipo;
     private String lexema;
+    private int fila,columna;
 
-    public Token(String tipo, String lexema) {
+    public Token(String tipo, String lexema, int fila, int columna) {
         this.tipo = tipo;
         this.lexema = lexema;
+        this.fila = fila;
+        this.columna = columna;
     }
 
     public String getTipo() {
@@ -25,5 +28,22 @@ public class Token {
     public void setLexema(String lexema) {
         this.lexema = lexema;
     }
+
+    public int getFila() {
+        return fila;
+    }
+
+    public void setFila(int fila) {
+        this.fila = fila;
+    }
+
+    public int getColumna() {
+        return columna;
+    }
+
+    public void setColumna(int columna) {
+        this.columna = columna;
+    }
      
+    
 }

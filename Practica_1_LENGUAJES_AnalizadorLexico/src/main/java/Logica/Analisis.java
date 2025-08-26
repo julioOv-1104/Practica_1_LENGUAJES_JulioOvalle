@@ -20,111 +20,7 @@ public class Analisis {
         this.comentarioBF = config.getComentarioBloqueFin(); // = "*/"
     }
 
-    public void analizar(String texto) {
 
-        int fila = 1;   // empieza con 1 per puede aumentar con '\n'
-        int columna = 1;// inicia con 1
-        int salto = 2;
-
-        StringBuilder lexema = new StringBuilder();//aqui se va a ir armando el texto que se está identificando
-
-        for (int i = 0; i < texto.length(); i++) {
-            char c = texto.charAt(i);
-            String simbolo = String.valueOf(c);
-
-            if (c == '\n') {
-
-                fila++;
-                columna = 1;
-
-                // letra - posible identificador o palabra reservada
-            } else if (Character.isLetter(c)) {
-
-                i = analizarLetras(lexema, i, texto, config);
-
-                columna = i + salto;
-            } //número - entero o decimal
-            else if (Character.isDigit(c)) {
-
-                i = analizarNumeros(lexema, i, texto);
-                columna = i + salto;
-
-                //Si es un signo de puntuacion
-            } else if (config.getPuntuacion().contains(simbolo)) {
-
-                System.out.println("TOKEN: PUNTUACION, LEXEMA: " + "'" + simbolo + "'"
-                        + " (" + fila + "," + columna + ")");
-                columna++;
-                //posible comentario
-            } else if (texto.startsWith(comentarioLinea, i)) {// si empieza con "//"
-
-                i = comentarioLinea(lexema, i, texto);
-                columna = i + salto;
-
-            } else if (texto.startsWith(comentarioBI, i)) {// si empieza con "/*"
-
-                lexema.setLength(0);
-                boolean cerrado = false;
-                lexema.append(comentarioBI);
-
-                i += comentarioBI.length();
-                columna += comentarioBI.length();//para que sepa donde seguir contando
-
-                while (i < texto.length()) {
-
-                    if (texto.startsWith(comentarioBF, i)) {//encontró el final del comentario
-
-                        lexema.append(comentarioBF);
-                        i += comentarioBF.length();
-                        columna += comentarioBF.length();
-                        cerrado = true;
-                        break;
-                    }
-
-                    lexema.append(texto.charAt(i));
-
-                    if (texto.charAt(i) == '\n') {
-                        fila++;
-                        columna = 1;
-                    } else {
-                        columna++;
-                    }
-                    i++;
-                }
-
-                comentarioBloque(lexema, i, texto);
-
-                //Si es un operador logico
-            } else if (config.getOperadores().contains(simbolo)) {
-
-                System.out.println("TOKEN: OPERADOR, LEXEMA: " + "'" + simbolo + "'"
-                        + " (" + fila + "," + columna + ")");
-                columna++;
-
-                //Si es un signo de agrupacion
-            } else if (config.getAgrupacion().contains(simbolo)) {
-
-                System.out.println("TOKEN: AGRUPACION, LEXEMA: " + "'" + simbolo + "'"
-                        + " (" + fila + "," + columna + ")");
-                columna++;
-
-                //espacios o saltos de línea
-            } else if (c == ' ') {
-                columna++;
-
-                //Posible caneda 
-            } else if (c == '"') {
-                i = analizarCadena(lexema, i, texto);
-                columna = i + salto;
-
-            } //cualquier otro símbolo (error)
-            else {
-                String error = Character.toString(c);
-                errorEncontrado(fila, columna, error);
-                columna++;
-            }
-        }
-    }
 
     public List<Token> analizarTexto(String texto) {
         StringBuilder lexema = new StringBuilder();//aqui se va a ir armando el texto que se está identificando
@@ -137,7 +33,7 @@ public class Analisis {
             if (c == '\n' || c == '\r') {
                 lexema.setLength(0);
                 lexema.append('\n');
-                agregarToken("SLATO", lexema + "");
+                agregarToken("SLATO", lexema + "", fila, columna);
                 fila++;
                 columna = 1;
 
@@ -145,7 +41,7 @@ public class Analisis {
             } else if (c == ' ') {
                 lexema.setLength(0);
                 lexema.append(' ');
-                agregarToken("ESPACIO", lexema + "");
+                agregarToken("ESPACIO", lexema + "", fila, columna);
                 columna++;
 
                 //Detecta identificadores o palabras reservadas
@@ -214,12 +110,12 @@ public class Analisis {
         if (config.getPalabrasReservadas().contains(palabra)) {
             System.out.println("TOKEN: PALABRA_RESERVADA, LEXEMA: " + lexema
                     + " (" + filaini + "," + columnaInicial + ")");
-            agregarToken("PALABRA_RESERVADA", lexema + "");
+            agregarToken("PALABRA_RESERVADA", lexema + "",filaini, columnaInicial);
 
         } else {
             System.out.println("TOKEN: IDENTIFICADOR, LEXEMA: " + lexema
                     + " (" + filaini + "," + columnaInicial + ")");
-            agregarToken("IDENTIFICADOR", lexema + "");
+            agregarToken("IDENTIFICADOR", lexema + "",filaini, columnaInicial);
         }
         columna++;
         return i; //se retorna "i" para llevar el conteo de caracteres leidos
@@ -287,11 +183,11 @@ public class Analisis {
         } else if (esDecimal) {
             System.out.println("TOKEN: DECIMAL, LEXEMA: " + lexema
                     + " (" + filaini + "," + columnaInicial + ")");
-            agregarToken("DECIMAL", lexema + "");
+            agregarToken("DECIMAL", lexema + "",filaini, columnaInicial);
         } else {
             System.out.println("TOKEN: NUMERO, LEXEMA: " + lexema
                     + " (" + filaini + "," + columnaInicial + ")");
-            agregarToken("NUMERO", lexema + "");
+            agregarToken("NUMERO", lexema + "",filaini, columnaInicial);
         }
 
         return i;
@@ -315,7 +211,7 @@ public class Analisis {
 
         System.out.println("TOKEN: COMENTARIO_LINEA, LEXEMA: " + "'" + lexema + "'"
                 + " (" + filaini + "," + columnaInicial + ")");
-        agregarToken("COMENTARIO_LINEA", lexema + "");
+        agregarToken("COMENTARIO_LINEA", lexema + "", filaini, columnaInicial);
         return i;
     }
 
@@ -357,7 +253,7 @@ public class Analisis {
         if (cerrado) {
             System.out.println("TOKEN: COMENTARIO_BLOQUE, LEXEMA: " + "'" + lexema + "'"//Si está cerrado
                     + " (" + filaini + "," + columnaInicial + ")");
-            agregarToken("COMENTARIO_BLOQUE", lexema + "");
+            agregarToken("COMENTARIO_BLOQUE", lexema + "", filaini, columnaInicial);
         } else {
             errorEncontrado(filaini, columnaInicial, lexema + "");//Si no está cerrado
         }
@@ -400,7 +296,7 @@ public class Analisis {
         if (cadenaCerrada) {
             System.out.println("TOKEN: CADENA, LEXEMA: " + lexema + " en"
                     + " (" + filaini + "," + columnaInicial + ")");
-            agregarToken("CADENA", lexema + "");
+            agregarToken("CADENA", lexema + "", filaini, columnaInicial);
 
         } else {
             errorEncontrado(fila, columnaInicial, lexema + "");
@@ -413,33 +309,33 @@ public class Analisis {
         lexema.setLength(0);
         System.out.println("TOKEN: PUNTUACION, LEXEMA: " + "'" + simbolo + "'"
                 + " (" + fila + "," + columna + ")");
-        agregarToken("PUNTUACION", simbolo + "");
+        agregarToken("PUNTUACION", simbolo + "", fila, columna);
     }
 
     private void analizarOperador(StringBuilder lexema, String simbolo) {
         lexema.setLength(0);
         System.out.println("TOKEN: OPERADOR, LEXEMA: " + "'" + simbolo + "'"
                 + " (" + fila + "," + columna + ")");
-        agregarToken("OPERADOR", simbolo + "");
+        agregarToken("OPERADOR", simbolo + "", fila, columna);
     }
 
     private void analizarAgrupacion(StringBuilder lexema, String simbolo) {
         lexema.setLength(0);
         System.out.println("TOKEN: AGRUPACION, LEXEMA: " + "'" + simbolo + "'"
                 + " (" + fila + "," + columna + ")");
-        agregarToken("AGRUPACION", simbolo + "");
+        agregarToken("AGRUPACION", simbolo + "", fila, columna);
     }
 
     private void errorEncontrado(int fila, int columna, String error) {
 
         System.out.println("ERROR: '" + error + "' no reconocido en ("
                 + fila + "," + columna + ")");
-        agregarToken("ERROR", error + "");
+        agregarToken("ERROR", error + "", fila, columna);
     }
 
-    private void agregarToken(String tipo, String lexema) {
+    private void agregarToken(String tipo, String lexema, int fila, int columna) {
 
-        tokensEncontrados.add(new Token(tipo, lexema));//Agrega el token econtrado a la lista
+        tokensEncontrados.add(new Token(tipo, lexema,fila,columna));//Agrega el token econtrado a la lista
     }
 
 }
