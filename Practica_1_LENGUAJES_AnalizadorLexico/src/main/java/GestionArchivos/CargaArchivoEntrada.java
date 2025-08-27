@@ -65,7 +65,7 @@ public class CargaArchivoEntrada implements Runnable {
             //System.out.println(archivoTexto);
 
             try {
-                espacio.getEstiloDocumento().insertString(espacio.getEstiloDocumento().getLength(), archivoTexto, null);
+                espacio.getEstiloDocumento1().insertString(espacio.getEstiloDocumento1().getLength(), archivoTexto, null);
             } catch (Exception e) {
             }
 

@@ -1,10 +1,14 @@
 package InterfazGrafica;
 
 import Logica.Analisis;
+import Logica.CrearReportes;
 import Logica.Token;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -13,16 +17,20 @@ import javax.swing.text.*;
 
 public class AnalizadorLexicoIG extends javax.swing.JFrame {
 
+    private StyledDocument estiloDocumento1;
     private StyledDocument estiloDocumento;
     private Analisis analizador;
     private boolean repintando = false;
     private ReporteErrores ReporteErrores = new ReporteErrores();
+    private List<Token> tokens = new ArrayList<>();
 
     public AnalizadorLexicoIG(Analisis analizador) {
         initComponents();
-        this.estiloDocumento = Editor1.getStyledDocument();
+        this.estiloDocumento1 = Editor1.getStyledDocument();
+        this.estiloDocumento = Editor2.getStyledDocument();
         this.analizador = analizador;
         definirEstilos(Editor1);
+        //Editor2.setEnabled(false);
 
     }
 
@@ -71,49 +79,52 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
     }
 
     public void colorearTokens() {
+        String textoIngresado = "";
+        try {
+            textoIngresado = estiloDocumento1.getText(0, estiloDocumento1.getLength()) + " ";
+        } catch (Exception e) {
+        }
 
-        String textoIngresado = Editor1.getText();
-        textoIngresado = textoIngresado;
-        List<Token> tokens = analizador.analizarTexto(textoIngresado);
+        tokens.clear();//limpia la lsta
+        tokens = analizador.analizarTexto(textoIngresado + " ");
 
         try {
 
-            estiloDocumento.remove(0, estiloDocumento.getLength());//limpia el txtPane
+            estiloDocumento1.remove(0, estiloDocumento1.getLength());//limpia el txtPane
 
             for (Token t : tokens) {
-                System.out.println("TIPO TOKEN " + t.getTipo());
-                Style estilo = estiloDocumento.getStyle("default");
+                Style estilo = estiloDocumento1.getStyle("default");
 
                 if ("PALABRA_RESERVADA".equals(t.getTipo())) {
-                    estilo = estiloDocumento.getStyle("reservadas");
+                    estilo = estiloDocumento1.getStyle("reservadas");
 
                 } else if ("IDENTIFICADOR".equals(t.getTipo())) {
-                    estilo = estiloDocumento.getStyle("identificadores");
+                    estilo = estiloDocumento1.getStyle("identificadores");
 
                 } else if ("NUMERO".equals(t.getTipo())) {
-                    estilo = estiloDocumento.getStyle("numeros");
+                    estilo = estiloDocumento1.getStyle("numeros");
 
                 } else if ("CADENA".equals(t.getTipo())) {
-                    estilo = estiloDocumento.getStyle("cadenas");
+                    estilo = estiloDocumento1.getStyle("cadenas");
 
                 } else if ("DECIMAL".equals(t.getTipo())) {
-                    estilo = estiloDocumento.getStyle("decimales");
+                    estilo = estiloDocumento1.getStyle("decimales");
 
                 } else if ("COMENTARIO_LINEA".equals(t.getTipo()) || "COMENTARIO_BLOQUE".equals(t.getTipo())) {
-                    estilo = estiloDocumento.getStyle("comentarios");
+                    estilo = estiloDocumento1.getStyle("comentarios");
 
                 } else if ("OPERADOR".equals(t.getTipo())) {
-                    estilo = estiloDocumento.getStyle("operadores");
+                    estilo = estiloDocumento1.getStyle("operadores");
 
                 } else if ("AGRUPACION".equals(t.getTipo())) {
-                    estilo = estiloDocumento.getStyle("agrupadores");
+                    estilo = estiloDocumento1.getStyle("agrupadores");
 
                 } else if ("ERROR".equals(t.getTipo())) {
-                    estilo = estiloDocumento.getStyle("errores");
+                    estilo = estiloDocumento1.getStyle("errores");
 
                 }
 
-                estiloDocumento.insertString(estiloDocumento.getLength(), t.getLexema() + " ", estilo);
+                estiloDocumento1.insertString(estiloDocumento1.getLength(), t.getLexema() + " ", estilo);
 
             }
 
@@ -140,8 +151,6 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
-        jMenu3 = new javax.swing.JMenu();
-        jMenuItem3 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -155,8 +164,11 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
         });
 
         btnBuscar.setText("Buscar");
-
-        txtBusqueda.setText("Busqueda...");
+        btnBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuscarActionPerformed(evt);
+            }
+        });
 
         jScrollPane2.setViewportView(Editor2);
 
@@ -229,16 +241,14 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
         jMenu2.setText("Guardar Archivo");
 
         jMenuItem2.setText("Guardar");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
         jMenu2.add(jMenuItem2);
 
         jMenuBar1.add(jMenu2);
-
-        jMenu3.setText("Importar Reporte");
-
-        jMenuItem3.setText("Importar");
-        jMenu3.add(jMenuItem3);
-
-        jMenuBar1.add(jMenu3);
 
         setJMenuBar(jMenuBar1);
 
@@ -267,24 +277,67 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
 
     private void btnAnalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarActionPerformed
         colorearTokens();
-        enlistarErrores();
+        enlistarResultados();
 
-        ReporteErrores.setVisible(true);
+
     }//GEN-LAST:event_btnAnalizarActionPerformed
 
-    private void enlistarErrores() {
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+
+        try {
+            tokens.clear();//limpia la lsta
+            tokens = analizador.analizarTexto(estiloDocumento1.getText(0, estiloDocumento1.getLength()) + " ");
+        } catch (Exception e) {
+            System.out.println("ERROR AL CARGAR TOKENS " + e.getMessage());
+        }
+
+        if (tokens.isEmpty() || txtBusqueda.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "No hay texto", "ERROR", JOptionPane.ERROR_MESSAGE);
+
+        } else {
+            String busqueda = txtBusqueda.getText();
+            resaltarBusqueda(busqueda, tokens);
+
+        }
+
+
+    }//GEN-LAST:event_btnBuscarActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        CrearReportes crear = new CrearReportes();
+        try {
+            crear.guardarTextoEntrada(estiloDocumento1.getText(0, estiloDocumento1.getLength()));
+             JOptionPane.showMessageDialog(null, "Texto guardado", "HECHO", JOptionPane.PLAIN_MESSAGE);
+        } catch (Exception e) {
+            System.out.println("ERROR AL EXPORTAR TEXTO " +e.getMessage());
+        }
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void enlistarResultados() {
         String textoIngresado = Editor1.getText();
         textoIngresado = textoIngresado;
-        List<Token> tokens = analizador.analizarTexto(textoIngresado);
-        
-        ReporteErrores.getTxtArea().removeAll();
-        
-        for (Token t : tokens) {
-            System.out.println("LEXEMA = " +t.getLexema());
-            ReporteErrores.getTxtArea().append(t.getLexema()+"                     "+ t.getFila()+"   " +t.getColumna()+"\n");
+        tokens = analizador.analizarTexto(textoIngresado);
+
+        CrearReportes crear = new CrearReportes();
+        crear.filtrarLista(tokens);
+
+    }
+
+    private void resaltarBusqueda(String busqueda, List<Token> tokens) {
+
+        try {
+            estiloDocumento.remove(0, estiloDocumento.getLength());//Limpia el espacio
+            for (Token t : tokens) {
+                Style estilo = estiloDocumento.getStyle("default");//Estilo predeterminado
+
+                if (busqueda.equals(t.getLexema())) {//Si coincide con la busqueda
+                    estilo = estiloDocumento1.getStyle("errores");//Lo pinta de color rojo
+                }
+                estiloDocumento.insertString(estiloDocumento.getLength(), t.getLexema() + " ", estilo);//Agrega el texto 
+            }
+        } catch (Exception e) {
         }
-        
-        
+
     }
 
     public JTextPane getEditor1() {
@@ -303,12 +356,12 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
         this.Editor2 = Editor2;
     }
 
-    public StyledDocument getEstiloDocumento() {
-        return estiloDocumento;
+    public StyledDocument getEstiloDocumento1() {
+        return estiloDocumento1;
     }
 
-    public void setEstiloDocumento(StyledDocument estiloDocumento) {
-        this.estiloDocumento = estiloDocumento;
+    public void setEstiloDocumento1(StyledDocument estiloDocumento1) {
+        this.estiloDocumento1 = estiloDocumento1;
     }
 
 
@@ -319,11 +372,9 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
     private javax.swing.JButton btnBuscar;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

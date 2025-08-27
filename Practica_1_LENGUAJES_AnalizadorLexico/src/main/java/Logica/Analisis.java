@@ -20,8 +20,6 @@ public class Analisis {
         this.comentarioBF = config.getComentarioBloqueFin(); // = "*/"
     }
 
-
-
     public List<Token> analizarTexto(String texto) {
         StringBuilder lexema = new StringBuilder();//aqui se va a ir armando el texto que se está identificando
         int indice = 0;
@@ -110,12 +108,12 @@ public class Analisis {
         if (config.getPalabrasReservadas().contains(palabra)) {
             System.out.println("TOKEN: PALABRA_RESERVADA, LEXEMA: " + lexema
                     + " (" + filaini + "," + columnaInicial + ")");
-            agregarToken("PALABRA_RESERVADA", lexema + "",filaini, columnaInicial);
+            agregarToken("PALABRA_RESERVADA", lexema + "", filaini, columnaInicial);
 
         } else {
             System.out.println("TOKEN: IDENTIFICADOR, LEXEMA: " + lexema
                     + " (" + filaini + "," + columnaInicial + ")");
-            agregarToken("IDENTIFICADOR", lexema + "",filaini, columnaInicial);
+            agregarToken("IDENTIFICADOR", lexema + "", filaini, columnaInicial);
         }
         columna++;
         return i; //se retorna "i" para llevar el conteo de caracteres leidos
@@ -183,11 +181,11 @@ public class Analisis {
         } else if (esDecimal) {
             System.out.println("TOKEN: DECIMAL, LEXEMA: " + lexema
                     + " (" + filaini + "," + columnaInicial + ")");
-            agregarToken("DECIMAL", lexema + "",filaini, columnaInicial);
+            agregarToken("DECIMAL", lexema + "", filaini, columnaInicial);
         } else {
             System.out.println("TOKEN: NUMERO, LEXEMA: " + lexema
                     + " (" + filaini + "," + columnaInicial + ")");
-            agregarToken("NUMERO", lexema + "",filaini, columnaInicial);
+            agregarToken("NUMERO", lexema + "", filaini, columnaInicial);
         }
 
         return i;
@@ -287,7 +285,7 @@ public class Analisis {
                 //salto de linea
                 fila++;
                 columna = 1;
-
+                break;
             }
 
             i++;
@@ -335,7 +333,7 @@ public class Analisis {
 
     private void agregarToken(String tipo, String lexema, int fila, int columna) {
 
-        tokensEncontrados.add(new Token(tipo, lexema,fila,columna));//Agrega el token econtrado a la lista
+        tokensEncontrados.add(new Token(tipo, lexema, fila, columna));//Agrega el token econtrado a la lista
     }
 
 }
