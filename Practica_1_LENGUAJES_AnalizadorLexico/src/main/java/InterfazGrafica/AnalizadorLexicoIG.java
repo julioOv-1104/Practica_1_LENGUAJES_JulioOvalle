@@ -7,13 +7,9 @@ import Logica.Token;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 
 public class AnalizadorLexicoIG extends javax.swing.JFrame {
@@ -21,8 +17,6 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
     public StyledDocument estiloDocumento1;
     private StyledDocument estiloDocumento2;
     private Analisis analizador;
-    private boolean repintando = false;
-    private ReporteErrores ReporteErrores = new ReporteErrores();
     private List<Token> tokens = new ArrayList<>();
     private Configuracion config;
 
@@ -32,6 +26,9 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
         this.estiloDocumento1 = Editor1.getStyledDocument();
         this.estiloDocumento2 = Editor2.getStyledDocument();
         this.analizador = analizador;
+        this.setLocationRelativeTo(null);
+        this.setResizable(false);
+        this.setTitle("Analizador Lexico");
         definirEstilos(Editor1);
         //Editor2.setEnabled(false);
 

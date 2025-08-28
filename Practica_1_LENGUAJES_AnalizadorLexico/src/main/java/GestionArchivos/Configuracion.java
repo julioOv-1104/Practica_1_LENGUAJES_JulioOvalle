@@ -56,11 +56,6 @@ public class Configuracion {//Clase que se encarga de cargar el archivo config.j
         return lista;
     }
 
-    public int contarTotalDeTokens() {
-        int total = 0;
-        return total = palabrasReservadas.size() + operadores.size() + puntuacion.size() + agrupacion.size() + 2;
-        //Se suma la cantidad de tokens que existen en el archivo .json y el "2" es por los comentarios de linea y bloque
-    }
 
     public List<String> getPalabrasReservadas() {
         return palabrasReservadas;

@@ -23,7 +23,7 @@ public class CargaArchivoEntrada implements Runnable {
     }
 
     @Override
-    public void run() {
+    public void run() {//Implementacion del metodo run  que carga y lee el archivo de entrada
 
         Path pathArchivo = Path.of(ruta);
 
@@ -34,7 +34,6 @@ public class CargaArchivoEntrada implements Runnable {
             archivoTexto = archivoTexto.replace("\r\n", "\n");
             archivoTexto = archivoTexto.replace("\r", "\n");
 
-            //System.out.println(archivoTexto);
 
             try {
                 espacio.getEstiloDocumento1().insertString(espacio.getEstiloDocumento1().getLength(), archivoTexto, null);
@@ -45,7 +44,6 @@ public class CargaArchivoEntrada implements Runnable {
             System.out.println("EL LARGO DEL ARCHIVO " + archivoTexto.length());
             System.out.println("---------------------------------LECTURA-------------------------------------");
             System.out.println("\n");
-            //List<Token> tokens  = analizador.analizarTexto( archivoTexto);
 
         } catch (IOException e) {
             System.out.println("ERROR AL LEER ARCHIVO DE ENTRADA: " + e.getMessage());

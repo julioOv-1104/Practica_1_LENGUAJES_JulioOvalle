@@ -9,6 +9,9 @@ public class ReporteTokens extends javax.swing.JFrame {
 
     public ReporteTokens() {
         initComponents();
+        this.setLocationRelativeTo(null);
+        this.setResizable(false);
+        this.setTitle("Reportes de Tokens");
     }
 
  
