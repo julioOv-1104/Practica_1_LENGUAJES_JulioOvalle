@@ -22,34 +22,6 @@ public class CargaArchivoEntrada implements Runnable {
         this.espacio = espacio;
     }
 
-    /*@Override
-    public void run() {
-        
-        Path pathArchivo = Path.of(ruta);
-
-        try {
-            int fila = 1;
-            FileReader fr = new FileReader(archivoentrada);
-            BufferedReader br = new BufferedReader(fr);
-
-            String linea;
-            System.out.println("LEYENDO TEXTO DE ENTRADA: " + ruta);
-            
-            String archivoTexto = Files.readString(pathArchivo);
-
-            while ((linea = br.readLine()) != null) {
-
-                String texto = linea;
-                System.out.println(texto);
-                
-
-            }
-
-        } catch (IOException e) {
-            System.out.println("ERROR AL LEER ARCHIVO DE ENTRADA: " + e.getMessage());
-        }
-
-    }*/
     @Override
     public void run() {
 

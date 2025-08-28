@@ -1,0 +1,13 @@
+------------------------------------------------------------
+| Token           | Lexema          | Cantidad        |
+------------------------------------------------------------
+|   IDENTIFICADOR |    rghergegtrge | 2       |
+|   IDENTIFICADOR |    grgerg615651 | 2       |
+|   IDENTIFICADOR |           rgerr | 2       |
+|         ESPACIO |                 | 3       |
+|   IDENTIFICADOR |    rghergegtrge | 2       |
+|   IDENTIFICADOR |    grgerg615651 | 2       |
+|   IDENTIFICADOR |           rgerr | 2       |
+|         ESPACIO |                 | 3       |
+|         ESPACIO |                 | 3       |
+------------------------------------------------------------

@@ -19,7 +19,7 @@ public class ClaseMain {
         Thread hilo = new Thread(iniciarArchivo);
         hilo.start();*/
         
-        AnalizadorLexicoIG ig = new AnalizadorLexicoIG(analizador);
+        AnalizadorLexicoIG ig = new AnalizadorLexicoIG(analizador,cargar);
         ig.setVisible(true);
         
         

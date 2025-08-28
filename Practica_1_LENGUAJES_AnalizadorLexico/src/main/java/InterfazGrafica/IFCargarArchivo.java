@@ -104,6 +104,8 @@ public class IFCargarArchivo extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_btnBuscarActionPerformed
 
     private void btnCargarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCargarActionPerformed
+
+        
         Configuracion cargar = new Configuracion();
         cargar.cargarJSON();
 
@@ -118,6 +120,9 @@ public class IFCargarArchivo extends javax.swing.JInternalFrame {
 
                 CargaArchivoEntrada iniciarArchivo = new CargaArchivoEntrada(ruta, cargar, analizador, espacio);
                 Thread hilo = new Thread(iniciarArchivo);
+                
+                espacio.estiloDocumento1.remove(0, espacio.estiloDocumento1.getLength());//limpia el txtPane
+                
                 hilo.start();
             }
         } catch (Exception e) {

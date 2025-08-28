@@ -334,6 +334,7 @@ public class Analisis {
     private void agregarToken(String tipo, String lexema, int fila, int columna) {
 
         tokensEncontrados.add(new Token(tipo, lexema, fila, columna));//Agrega el token econtrado a la lista
+        
     }
 
 }

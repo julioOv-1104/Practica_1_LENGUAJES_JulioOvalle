@@ -1,5 +1,6 @@
 package Logica;
 
+import GestionArchivos.Configuracion;
 import InterfazGrafica.ReporteErrores;
 import InterfazGrafica.ReporteTokens;
 import java.io.*;
@@ -7,14 +8,22 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 
 public class CrearReportes {
 
-    private List<Token> listaErrores = new ArrayList<>();
-    private List<Token> listaTokens = new ArrayList<>();
+    private List<Token> listaErrores = new ArrayList<>();//Se guardan los errores
+    private List<Token> listaTokens = new ArrayList<>();//Se guardan los tokens validos
+    private List<String> listaUsados = new ArrayList<>();// Se guardan los tokens usados
+    private List<String> listaNoUtilizados = new ArrayList<>();// Se guardan los tokens que no fueron usados
     private ReporteErrores jfErrores = new ReporteErrores();//el JFrame de Errores
-    private ReporteTokens jfTokens = new ReporteTokens();
+    private ReporteTokens jfTokens = new ReporteTokens();// JFrame cuando no hay errores
+    private Configuracion config;
+
+    public CrearReportes(Configuracion config) {
+        this.config = config;
+    }
 
     public void filtrarLista(List<Token> tokens) {
         boolean errores = false;
@@ -24,17 +33,20 @@ public class CrearReportes {
             if ("ERROR".equals(t.getTipo())) {
                 errores = true;
                 listaErrores.add(t);
+            } else {
+                listaTokens.add(t);//listado con tokens validos
             }
 
-            listaTokens.add(t);
         }
         if (errores) {//Si hay al menos un error
-
             mostrarErrores(listaErrores, jfErrores.getTxtArea());
 
         } else {// Si no hay errores
             mostrarTokens(listaTokens, jfTokens.getTxtAreaReporte(), jfTokens.getTxtAreaRecuento());
         }
+
+        //Muestra el reporte general
+        crearReporteGeneral();
     }
 
     public void mostrarErrores(List<Token> errores, JTextArea areaReporte) {
@@ -150,6 +162,57 @@ public class CrearReportes {
         } catch (IOException e) {
             System.out.println("ERROR AL EXPORTAR TEXTO DE ENTRADA " + e.getMessage());
         }
+    }
+
+    public void crearReporteGeneral() {
+        listaUsados.clear();
+        listaNoUtilizados.clear();//Limpia las listas
+
+        int errores = listaErrores.size();
+        int validos = listaTokens.size();
+
+        int total = errores + validos;
+
+        double porcentajeValidos = (100 * validos) / total;
+
+        for (Token v : listaTokens) {//Recorre el listado de validos y lo compara con el de usados
+            String lexema = v.getLexema();
+            String tipo = v.getTipo();
+
+            if (tipo.equals("IDENTIFICADOR") || tipo.equals("DECIMAL")
+                    || tipo.equals("NUMERO") || tipo.equals("CADENA")
+                    || tipo.equals("COMENTARIO_BLOQUE") || tipo.equals("COMENTARIO_LINEA")) {//Si es alguno de estos tokens los ignora
+
+            } else {
+                if (listaUsados.contains(lexema)) {
+
+                } else {
+                    listaUsados.add(lexema);
+                }
+            }
+
+        }
+        
+        encontrarNoUsados(config.getPalabrasReservadas());
+        encontrarNoUsados(config.getAgrupacion());
+        encontrarNoUsados(config.getPuntuacion());
+        encontrarNoUsados(config.getOperadores());//Pasa por todas las listas de tokens para encontrar las que faltan
+        
+        JOptionPane.showMessageDialog(null, "Cantidad de errores: "+listaErrores.size()+"\n"
+                + "Porcentaje de tokens validos: " +porcentajeValidos+"% \n Tokens no utlizados: " +listaNoUtilizados,
+                "Reporte General",JOptionPane.PLAIN_MESSAGE);
+
+    }
+
+    private void encontrarNoUsados(List<String> lista) {
+        
+        for (String string : lista) {
+            
+            if (!listaUsados.contains(string)) {
+                listaNoUtilizados.add(string);
+            }
+        }
+
     }
 
 }

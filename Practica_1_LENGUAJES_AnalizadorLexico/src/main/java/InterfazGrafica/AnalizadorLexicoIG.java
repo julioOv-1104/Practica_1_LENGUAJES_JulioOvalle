@@ -1,5 +1,6 @@
 package InterfazGrafica;
 
+import GestionArchivos.Configuracion;
 import Logica.Analisis;
 import Logica.CrearReportes;
 import Logica.Token;
@@ -17,17 +18,19 @@ import javax.swing.text.*;
 
 public class AnalizadorLexicoIG extends javax.swing.JFrame {
 
-    private StyledDocument estiloDocumento1;
-    private StyledDocument estiloDocumento;
+    public StyledDocument estiloDocumento1;
+    private StyledDocument estiloDocumento2;
     private Analisis analizador;
     private boolean repintando = false;
     private ReporteErrores ReporteErrores = new ReporteErrores();
     private List<Token> tokens = new ArrayList<>();
+    private Configuracion config;
 
-    public AnalizadorLexicoIG(Analisis analizador) {
+    public AnalizadorLexicoIG(Analisis analizador, Configuracion config) {
         initComponents();
+        this.config = config;
         this.estiloDocumento1 = Editor1.getStyledDocument();
-        this.estiloDocumento = Editor2.getStyledDocument();
+        this.estiloDocumento2 = Editor2.getStyledDocument();
         this.analizador = analizador;
         definirEstilos(Editor1);
         //Editor2.setEnabled(false);
@@ -83,6 +86,7 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
         try {
             textoIngresado = estiloDocumento1.getText(0, estiloDocumento1.getLength()) + " ";
         } catch (Exception e) {
+            System.out.println("ERROR AL LIMPIAR EL TEXTO " + e.getMessage());
         }
 
         tokens.clear();//limpia la lsta
@@ -129,6 +133,7 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
             }
 
         } catch (Exception e) {
+            System.out.println("ERROR AL PINTAR EL TEXTO " + e.getMessage());
         }
 
     }
@@ -147,9 +152,9 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         Editor2 = new javax.swing.JTextPane();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
+        menuCargar = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
+        menuGuardar = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -226,7 +231,7 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
             .addComponent(vistaEscritorio)
         );
 
-        jMenu1.setText("Cargar Archivo");
+        menuCargar.setText("Cargar Archivo");
 
         jMenuItem1.setText("Cargar");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
@@ -234,11 +239,11 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
                 jMenuItem1ActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuItem1);
+        menuCargar.add(jMenuItem1);
 
-        jMenuBar1.add(jMenu1);
+        jMenuBar1.add(menuCargar);
 
-        jMenu2.setText("Guardar Archivo");
+        menuGuardar.setText("Guardar Archivo");
 
         jMenuItem2.setText("Guardar");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
@@ -246,9 +251,9 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
                 jMenuItem2ActionPerformed(evt);
             }
         });
-        jMenu2.add(jMenuItem2);
+        menuGuardar.add(jMenuItem2);
 
-        jMenuBar1.add(jMenu2);
+        jMenuBar1.add(menuGuardar);
 
         setJMenuBar(jMenuBar1);
 
@@ -276,8 +281,19 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void btnAnalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarActionPerformed
-        colorearTokens();
-        enlistarResultados();
+
+        try {
+
+            if (estiloDocumento1.getText(0, estiloDocumento1.getLength()).isEmpty()) {
+                JOptionPane.showMessageDialog(null, "No hay texto", "ERROR", JOptionPane.ERROR_MESSAGE);
+            } else {
+                colorearTokens();
+                enlistarResultados();
+            }
+
+        } catch (Exception e) {
+
+        }
 
 
     }//GEN-LAST:event_btnAnalizarActionPerformed
@@ -286,7 +302,7 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
 
         try {
             tokens.clear();//limpia la lsta
-            tokens = analizador.analizarTexto(estiloDocumento1.getText(0, estiloDocumento1.getLength()) + " ");
+            tokens = analizador.analizarTexto(estiloDocumento1.getText(0, estiloDocumento1.getLength()) + " ");//Analiza el texto
         } catch (Exception e) {
             System.out.println("ERROR AL CARGAR TOKENS " + e.getMessage());
         }
@@ -304,21 +320,21 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
     }//GEN-LAST:event_btnBuscarActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
-        CrearReportes crear = new CrearReportes();
+        CrearReportes crear = new CrearReportes(config);
         try {
             crear.guardarTextoEntrada(estiloDocumento1.getText(0, estiloDocumento1.getLength()));
-             JOptionPane.showMessageDialog(null, "Texto guardado", "HECHO", JOptionPane.PLAIN_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Texto guardado", "HECHO", JOptionPane.PLAIN_MESSAGE);
         } catch (Exception e) {
-            System.out.println("ERROR AL EXPORTAR TEXTO " +e.getMessage());
+            System.out.println("ERROR AL EXPORTAR TEXTO " + e.getMessage());
         }
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void enlistarResultados() {
+
         String textoIngresado = Editor1.getText();
-        textoIngresado = textoIngresado;
         tokens = analizador.analizarTexto(textoIngresado);
 
-        CrearReportes crear = new CrearReportes();
+        CrearReportes crear = new CrearReportes(config);
         crear.filtrarLista(tokens);
 
     }
@@ -326,14 +342,14 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
     private void resaltarBusqueda(String busqueda, List<Token> tokens) {
 
         try {
-            estiloDocumento.remove(0, estiloDocumento.getLength());//Limpia el espacio
+            estiloDocumento2.remove(0, estiloDocumento2.getLength());//Limpia el espacio
             for (Token t : tokens) {
-                Style estilo = estiloDocumento.getStyle("default");//Estilo predeterminado
+                Style estilo = estiloDocumento2.getStyle("default");//Estilo predeterminado
 
                 if (busqueda.equals(t.getLexema())) {//Si coincide con la busqueda
                     estilo = estiloDocumento1.getStyle("errores");//Lo pinta de color rojo
                 }
-                estiloDocumento.insertString(estiloDocumento.getLength(), t.getLexema() + " ", estilo);//Agrega el texto 
+                estiloDocumento2.insertString(estiloDocumento2.getLength(), t.getLexema() + " ", estilo);//Agrega el texto 
             }
         } catch (Exception e) {
         }
@@ -370,14 +386,14 @@ public class AnalizadorLexicoIG extends javax.swing.JFrame {
     private javax.swing.JTextPane Editor2;
     private javax.swing.JButton btnAnalizar;
     private javax.swing.JButton btnBuscar;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JMenu menuCargar;
+    private javax.swing.JMenu menuGuardar;
     private javax.swing.JTextField txtBusqueda;
     private javax.swing.JDesktopPane vistaEscritorio;
     // End of variables declaration//GEN-END:variables
